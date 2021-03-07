@@ -78,11 +78,20 @@ pub fn fibonacci_sum_range_ends(m: u64, n: u64) -> u8 {
     }
 }
 
+pub fn fibonacci_sum_square_ends(n: u64) -> u8 {
+    let new_n = (n + 1) as usize % FIBO_ENDS.len();
+    FIBO_ENDS
+        .iter()
+        .take(new_n)
+        .map(|v| v * v)
+        .fold(0u8, |accum, value| (accum + value) % 10)
+}
+
 #[cfg(test)]
 mod test {
     use crate::fibonacci::{
         fibonacci, fibonacci_ends, fibonacci_modulus, fibonacci_sum_ends, fibonacci_sum_range_ends,
-        pisano,
+        fibonacci_sum_square_ends, pisano,
     };
 
     #[test]
@@ -149,5 +158,12 @@ mod test {
     #[test]
     fn fibo_sum_range_ends_flipped_modulus() {
         assert_eq!(fibonacci_sum_range_ends(5618252, 6583591534156), 6);
+    }
+
+    #[test]
+    fn fibo_sum_square_ends() {
+        assert_eq!(fibonacci_sum_square_ends(7), 3);
+        assert_eq!(fibonacci_sum_square_ends(73), 1);
+        assert_eq!(fibonacci_sum_square_ends(1234567890), 0);
     }
 }
