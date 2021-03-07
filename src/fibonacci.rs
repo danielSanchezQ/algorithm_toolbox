@@ -1,3 +1,8 @@
+static FIBO_ENDS: [u8; 60] = [
+    0, 1, 1, 2, 3, 5, 8, 3, 1, 4, 5, 9, 4, 3, 7, 0, 7, 7, 4, 1, 5, 6, 1, 7, 8, 5, 3, 8, 1, 9, 0, 9,
+    9, 8, 7, 5, 2, 7, 9, 6, 5, 1, 6, 7, 3, 0, 3, 3, 6, 9, 5, 4, 9, 3, 2, 5, 7, 2, 9, 1,
+];
+
 pub fn fibonacci(n: u32) -> u64 {
     if n <= 1 {
         return n as u64;
@@ -11,12 +16,8 @@ pub fn fibonacci(n: u32) -> u64 {
     b
 }
 
-pub fn fibonacci_ends(n: u32) -> u8 {
-    static ENDS: [u8; 60] = [
-        0, 1, 1, 2, 3, 5, 8, 3, 1, 4, 5, 9, 4, 3, 7, 0, 7, 7, 4, 1, 5, 6, 1, 7, 8, 5, 3, 8, 1, 9,
-        0, 9, 9, 8, 7, 5, 2, 7, 9, 6, 5, 1, 6, 7, 3, 0, 3, 3, 6, 9, 5, 4, 9, 3, 2, 5, 7, 2, 9, 1,
-    ];
-    ENDS[n as usize % ENDS.len()]
+pub fn fibonacci_ends(n: u64) -> u8 {
+    FIBO_ENDS[n as usize % FIBO_ENDS.len()]
 }
 
 pub fn pisano(m: u64) -> u64 {
@@ -48,9 +49,41 @@ pub fn fibonacci_modulus(n: u64, m: u64) -> u64 {
     b % m
 }
 
+pub fn fibonacci_sum_ends(n: u64) -> u8 {
+    let new_n = (n + 1) as usize % FIBO_ENDS.len();
+    FIBO_ENDS
+        .iter()
+        .take(new_n)
+        .fold(0u8, |accum, value| (accum + value) % 10)
+}
+
+pub fn fibonacci_sum_range_ends(m: u64, n: u64) -> u8 {
+    if m == n {
+        return fibonacci_ends(n);
+    }
+    let new_m = m as usize % FIBO_ENDS.len();
+    let new_n = n as usize % FIBO_ENDS.len();
+    if new_m < new_n {
+        (new_m..new_n + 1)
+            .map(|i| FIBO_ENDS[i])
+            .fold(0u8, |acc, value| (acc + value) % 10)
+    } else {
+        let prev = (0..new_n + 1)
+            .map(|i| FIBO_ENDS[i])
+            .fold(0u8, |acc, value| (acc + value) % 10);
+        let next = (new_m..FIBO_ENDS.len())
+            .map(|i| FIBO_ENDS[i])
+            .fold(0u8, |acc, value| (acc + value) % 10);
+        (prev + next) % 10
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use crate::fibonacci::{fibonacci, fibonacci_ends, fibonacci_modulus, pisano};
+    use crate::fibonacci::{
+        fibonacci, fibonacci_ends, fibonacci_modulus, fibonacci_sum_ends, fibonacci_sum_range_ends,
+        pisano,
+    };
 
     #[test]
     fn test_seq() {
@@ -61,7 +94,7 @@ mod test {
     #[test]
     fn test_ends() {
         for i in 0..50 {
-            assert_eq!(fibonacci_ends(i) as u64, fibonacci(i) % 10);
+            assert_eq!(fibonacci_ends(i) as u64, fibonacci(i as u32) % 10);
         }
     }
 
@@ -90,5 +123,31 @@ mod test {
         let (n, m) = (9999999999999, 2);
         let expected = 0;
         assert_eq!(fibonacci_modulus(n, m), expected);
+    }
+
+    #[test]
+    fn fibo_sum_ends_example() {
+        assert_eq!(fibonacci_sum_ends(3), 4);
+    }
+
+    #[test]
+    fn fibo_sum_ends_example2() {
+        assert_eq!(fibonacci_sum_ends(100), 5);
+    }
+
+    #[test]
+    fn fibo_sum_ends_big() {
+        println!("{}", fibonacci_sum_ends(832564823476));
+    }
+
+    #[test]
+    fn fibo_sum_range_ends() {
+        assert_eq!(fibonacci_sum_range_ends(3, 7), 1);
+        assert_eq!(fibonacci_sum_range_ends(10, 200), 2);
+    }
+
+    #[test]
+    fn fibo_sum_range_ends_flipped_modulus() {
+        assert_eq!(fibonacci_sum_range_ends(5618252, 6583591534156), 6);
     }
 }
