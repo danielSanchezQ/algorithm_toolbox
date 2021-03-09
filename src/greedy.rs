@@ -52,7 +52,7 @@ pub fn gas_stations(distance: u64, gas_distance: u64, gas_stations: &mut Vec<u64
     let mut max_distance = gas_distance;
     for stations in gas_stations.windows(2) {
         let (p, n) = (stations[0], stations[1]);
-        if p <= max_distance && max_distance <= n {
+        if p <= max_distance && max_distance < n {
             counter += 1;
             max_distance = p + gas_distance;
         }
