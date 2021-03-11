@@ -64,6 +64,16 @@ pub fn gas_stations(distance: u64, gas_distance: u64, gas_stations: &mut Vec<u64
     };
 }
 
+pub fn advertisement_revenue(profit_per_click: &mut [i64], average_clicks: &mut [i64]) -> i64 {
+    profit_per_click.sort_by(|a, b| b.cmp(a));
+    average_clicks.sort_by(|a, b| b.cmp(a));
+    profit_per_click
+        .iter()
+        .zip(average_clicks.iter())
+        .map(|(a, b)| a * b)
+        .sum()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -95,5 +105,12 @@ mod test {
             gas_stations(500, 200, &mut vec![100, 200, 300, 400]),
             Some(2)
         );
+    }
+
+    #[test]
+    fn advertisement_revenue_example() {
+        let mut values = [1, 3, -5];
+        let mut clicks = [-2, 4, 1];
+        assert_eq!(advertisement_revenue(&mut values, &mut clicks), 23);
     }
 }
