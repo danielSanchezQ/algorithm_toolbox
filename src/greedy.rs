@@ -74,6 +74,24 @@ pub fn advertisement_revenue(profit_per_click: &mut [i64], average_clicks: &mut 
         .sum()
 }
 
+pub fn minimum_segments_shared_points(segments: &mut [(u64, u64)]) -> Vec<u64> {
+    let mut res = Vec::new();
+    if !segments.is_empty() {
+        segments.sort();
+        let (_, mut b) = segments[0];
+        for (next_a, next_b) in segments.iter().skip(1) {
+            if b < *next_a {
+                res.push(b);
+                b = *next_b;
+            } else if b > *next_b {
+                b = *next_b;
+            }
+        }
+        res.push(b);
+    }
+    res
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -112,5 +130,14 @@ mod test {
         let mut values = [1, 3, -5];
         let mut clicks = [-2, 4, 1];
         assert_eq!(advertisement_revenue(&mut values, &mut clicks), 23);
+    }
+
+    #[test]
+    fn signatures_example() {
+        let mut segments = [(1, 4), (1, 3), (2, 5), (3, 6)];
+        assert_eq!(minimum_segments_shared_points(&mut segments), vec![3]);
+
+        let mut segments = [(4, 7), (1, 3), (2, 5), (5, 6)];
+        assert_eq!(minimum_segments_shared_points(&mut segments), vec![3, 6]);
     }
 }
