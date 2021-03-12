@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::ops::Div;
 
 pub fn coin_exchange(n: u64) -> u64 {
@@ -92,6 +93,45 @@ pub fn minimum_segments_shared_points(segments: &mut [(u64, u64)]) -> Vec<u64> {
     res
 }
 
+pub fn max_prizes(n: u64) -> Vec<u64> {
+    let mut res = Vec::new();
+    let mut remind = n;
+    let mut next = 1;
+    while remind != 0 {
+        if next > remind {
+            res.last_mut().map(|v| *v += remind);
+            remind = 0;
+        } else {
+            res.push(next);
+            remind -= next;
+            next += 1;
+        }
+    }
+    res
+}
+
+pub fn max_number_from_digits(digits: &mut [u64]) {
+    digits.sort_by(|a, b| {
+        let a = a.to_string();
+        let b = b.to_string();
+        for (d1, d2) in a.chars().zip(b.chars()) {
+            if d1 == d2 && a.len() < b.len() {
+                return Ordering::Less;
+            }
+            match d1.cmp(&d2) {
+                Ordering::Less => {
+                    return Ordering::Greater;
+                }
+                Ordering::Equal => {}
+                Ordering::Greater => {
+                    return Ordering::Less;
+                }
+            }
+        }
+        Ordering::Equal
+    });
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -139,5 +179,35 @@ mod test {
 
         let mut segments = [(4, 7), (1, 3), (2, 5), (5, 6)];
         assert_eq!(minimum_segments_shared_points(&mut segments), vec![3, 6]);
+    }
+
+    #[test]
+    fn max_rewards_examples() {
+        assert_eq!(max_prizes(2), vec![2]);
+        assert_eq!(max_prizes(6), vec![1, 2, 3]);
+        assert_eq!(max_prizes(8), vec![1, 2, 5]);
+    }
+
+    #[test]
+    fn max_number_from_digits_examples() {
+        let mut v = [21, 2];
+        max_number_from_digits(&mut v);
+        assert_eq!(v, [2, 21]);
+
+        let mut v = [9, 4, 6, 1, 9];
+        max_number_from_digits(&mut v);
+        assert_eq!(v, [9, 9, 6, 4, 1]);
+
+        let mut v = [23, 39, 92];
+        max_number_from_digits(&mut v);
+        assert_eq!(v, [92, 39, 23]);
+
+        let mut v = [23, 39, 92, 4];
+        max_number_from_digits(&mut v);
+        assert_eq!(v, [92, 4, 39, 23]);
+
+        let mut v = [1, 1, 10, 10];
+        max_number_from_digits(&mut v);
+        assert_eq!(v, [1, 1, 10, 10]);
     }
 }
