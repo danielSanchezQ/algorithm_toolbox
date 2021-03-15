@@ -111,25 +111,46 @@ pub fn max_prizes(n: u64) -> Vec<u64> {
 }
 
 pub fn max_number_from_digits(digits: &mut [u64]) {
-    digits.sort_by(|a, b| {
-        let a = a.to_string();
-        let b = b.to_string();
-        for (d1, d2) in a.chars().zip(b.chars()) {
-            if d1 == d2 && a.len() < b.len() {
-                return Ordering::Less;
+    digits.sort_by(|init_a, init_b| {
+        let a = init_a.to_string();
+        let b = init_b.to_string();
+        let (a, mut b) = match (a, b) {
+            (a, b) if a.len() > b.len() => (b, a),
+            otherwise => otherwise,
+        };
+        while b.starts_with(&a) && (b.len() > a.len()) {
+            for _ in 0..a.len() {
+                b.remove(0);
             }
-            match d1.cmp(&d2) {
-                Ordering::Less => {
+        }
+        let mut a_iter = a.chars();
+        let mut b_iter = b.chars();
+        loop {
+            let a_next = a_iter.next();
+            let b_next = b_iter.next();
+            match (a_next, b_next) {
+                (None, None) => {
                     return Ordering::Greater;
                 }
-                Ordering::Equal => {}
-                Ordering::Greater => {
+                (Some(a), Some(b)) => match a.cmp(&b) {
+                    Ordering::Equal => {}
+                    Ordering::Less => {
+                        return Ordering::Less;
+                    }
+                    Ordering::Greater => {
+                        return Ordering::Greater;
+                    }
+                },
+                (Some(_), None) => {
                     return Ordering::Less;
+                }
+                (None, Some(_)) => {
+                    return Ordering::Greater;
                 }
             }
         }
-        Ordering::Equal
     });
+    digits.reverse();
 }
 
 #[cfg(test)]
@@ -206,8 +227,12 @@ mod test {
         max_number_from_digits(&mut v);
         assert_eq!(v, [92, 4, 39, 23]);
 
-        let mut v = [1, 1, 10, 10];
+        let mut v = [111, 1, 1, 10, 10];
         max_number_from_digits(&mut v);
-        assert_eq!(v, [1, 1, 10, 10]);
+        assert_eq!(v, [1, 1, 111, 10, 10]);
+
+        let mut v = [95959995, 95];
+        max_number_from_digits(&mut v);
+        assert_eq!(v, [95959995, 95]);
     }
 }
