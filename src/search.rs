@@ -1,4 +1,6 @@
 use std::cmp::Ordering;
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::ops::Div;
 
 pub fn binary_search<T>(slice: &[T], element: &T) -> Option<usize>
@@ -34,6 +36,23 @@ where
     T: Ord,
 {
     to_find.iter().map(|e| binary_search(slice, e)).collect()
+}
+
+pub fn majority_element<T>(slice: &[T]) -> usize
+where
+    T: Eq + Hash + Clone,
+{
+    let accum: HashMap<T, u64> = HashMap::new();
+    slice
+        .iter()
+        .fold(accum, |mut acc, value| {
+            let entry = acc.entry(value.clone()).or_default();
+            *entry += 1;
+            acc
+        })
+        .into_iter()
+        .filter(|(_, total)| *total > ((slice.len() / 2) as u64))
+        .count()
 }
 
 #[cfg(test)]
@@ -76,5 +95,17 @@ mod test {
         let other = [8, 1, 23, 1, 11];
         let result = [Some(2), Some(0), None, Some(0), None];
         assert_eq!(binary_search_all(&slice, &other).as_slice(), result);
+    }
+
+    #[test]
+    fn majority_example() {
+        let s = [2, 3, 9, 2, 2];
+        assert_eq!(majority_element(&s), 1);
+
+        let s = [1, 2, 3, 4];
+        assert_eq!(majority_element(&s), 0);
+
+        let s = [1, 3, 9, 2, 1];
+        assert_eq!(majority_element(&s), 0);
     }
 }
