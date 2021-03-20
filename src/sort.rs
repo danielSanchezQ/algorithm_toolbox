@@ -105,16 +105,9 @@ where
     'merge_loop: loop {
         match (next1, next2) {
             (Some(v1), Some(v2)) => match v1.cmp(v2) {
-                Ordering::Less => {
+                Ordering::Less | Ordering::Equal => {
                     res.push(*v1);
                     next1 = it1.next();
-                    i1 += 1;
-                }
-                Ordering::Equal => {
-                    res.push(*v1);
-                    res.push(*v2);
-                    next1 = it1.next();
-                    next2 = it2.next();
                     i1 += 1;
                 }
                 Ordering::Greater => {
@@ -142,7 +135,7 @@ where
 
 pub fn number_of_inversions<T>(slice: &[T]) -> (Vec<T>, u64)
 where
-    T: Copy + Ord + Debug,
+    T: Copy + Ord,
 {
     if slice.len() <= 1 {
         return (slice.to_vec(), 0);
