@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::ops::Div;
+use std::ops::{Div, RangeInclusive};
 
 pub fn binary_search<T>(slice: &[T], element: &T) -> Option<usize>
 where
@@ -53,6 +53,44 @@ where
         .into_iter()
         .filter(|(_, total)| *total > ((slice.len() / 2) as u64))
         .count()
+}
+
+/// From theorem:
+/// https://d3c33hcgiwev3.cloudfront.net/imageAssetProxy.v1/ia-ZEETbQzSvmRBE23M0hw_748fb2abc394115c179a09b8b1ed1f6d_20200622_160953.jpg?expiry=1616544000000&hmac=W4J9KK2DkhHNDEi2nY3IVcJaCuTiSjbTTZKFVW3f46k
+pub fn points_on_segments(segments: &[(i64, i64)], points: &[i64]) -> Vec<u64> {
+    let (mut starts, mut ends) =
+        segments
+            .iter()
+            .cloned()
+            .fold((Vec::new(), Vec::new()), |(mut inits, mut ends), (i, e)| {
+                inits.push(i);
+                ends.push(e);
+                (inits, ends)
+            });
+    starts.sort();
+    ends.sort();
+    println!("{:?} {:?}", starts, ends);
+    points
+        .iter()
+        .map(|p| {
+            let mut l = 0;
+            for (i, s) in starts.iter().enumerate().rev() {
+                if s <= p {
+                    l = i + 1;
+                    break;
+                }
+            }
+            let mut h = 0;
+            for (i, e) in ends.iter().enumerate().rev() {
+                if e < p {
+                    h = i + 1;
+                    break;
+                }
+            }
+            println!("{} {} {}", p, h, l);
+            (l - h) as u64
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -107,5 +145,13 @@ mod test {
 
         let s = [1, 3, 9, 2, 1];
         assert_eq!(majority_element(&s), 0);
+    }
+
+    #[test]
+    fn points_on_segments_example() {
+        let segments = [(0, 5), (-3, 2), (7, 10)];
+        let points = [1, 6];
+        let output = [2, 0];
+        assert_eq!(&points_on_segments(&segments, &points), &output)
     }
 }

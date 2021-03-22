@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::fmt::Debug;
 
 pub fn quick_sorted<T>(values: &[T]) -> Vec<T>
 where
