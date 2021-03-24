@@ -101,30 +101,51 @@ fn distance_squared((x1, y1): Point, (x2, y2): Point) -> i64 {
     xx * xx + yy * yy
 }
 /// points (x, y) are considered already sorted by their x coordinate
-fn closest_points_split(points: &[Point]) -> f64 {
+fn closest_points_split(points: &[Point]) -> i64 {
     match points {
-        &[] | &[_] => f64::MAX,
-        &[p1, p2] => distance_squared(p1, p2) as f64,
+        &[] | &[_] => i64::MAX,
+        &[p1, p2] => distance_squared(p1, p2),
+        &[p1, p2, p3] => closest_points_ahead(&[p1, p2, p3]),
         points => {
             let pivot = points.len() / 2;
             let left_min = closest_points_split(&points[..pivot]);
             let right_min = closest_points_split(&points[pivot..]);
-            left_min.min(right_min)
+            let min_x = left_min.min(right_min);
+            let pivot_x = points[pivot].0;
+            let range = pivot_x - min_x..=pivot_x + min_x;
+            let mut points_by_y: Vec<Point> = points
+                .iter()
+                .filter(|p| range.contains(&p.0))
+                .map(|(a, b)| (*b, *a))
+                .collect();
+            points_by_y.sort();
+            let min_y = closest_points_ahead(&points_by_y);
+            min_x.min(min_y)
         }
     }
 }
 
+fn closest_points_ahead(points: &[Point]) -> i64 {
+    let mut min_distance = i64::MAX;
+    for i in 0..points.len() - 1 {
+        for j in (i + 1..points.len()).take(7) {
+            let a = points[i];
+            let b = points[j];
+            let distance = distance_squared(a, b);
+            if distance < min_distance {
+                min_distance = distance;
+            }
+        }
+    }
+    min_distance
+}
+
 fn closest_points(points: &mut [Point]) -> f64 {
-    points.sort_by_key(|p| p.0);
-    let min_x = closest_points_split(&points);
-    let pivot = (points.len() / 2) as i64;
-    let mut points_by_y: Vec<Point> = points
-        .iter()
-        .filter(|p| (pivot - p.0.abs()) as f64 <= min_x)
-        .cloned()
-        .collect();
-    points_by_y.sort_by_key(|p| p.1);
-    min_x.min(closest_points_split(&points_by_y)).sqrt()
+    if points.len() <= 3 {
+        return (closest_points_ahead(&points) as f64).sqrt();
+    }
+    points.sort();
+    (closest_points_split(&points) as f64).sqrt()
 }
 
 #[cfg(test)]
@@ -199,5 +220,41 @@ mod test {
     fn closes_points_example2() {
         let mut points = [(7, 7), (1, 100), (4, 8), (7, 7)];
         assert_eq!(closest_points(&mut points), 0f64)
+    }
+    fn brute_force_closes_point(points: &[Point]) -> i64 {
+        let mut min_distance = i64::MAX;
+        for i in 0..points.len() - 1 {
+            for j in i + 1..points.len() {
+                let a = points[i];
+                let b = points[j];
+                let distance = distance_squared(a, b);
+                if distance < min_distance {
+                    min_distance = distance;
+                }
+            }
+        }
+        min_distance
+    }
+
+    #[test]
+    fn generative_closest_points_test() {
+        for _ in 0..100 {
+            let mut rng = rand::thread_rng();
+            let mut points: Vec<Point> = (0..100)
+                .into_iter()
+                .map(|_| {
+                    (
+                        (rng.next_u32() % 1000) as i64,
+                        (rng.next_u32() % 1000) as i64,
+                    )
+                })
+                .collect();
+            assert_eq!(
+                (brute_force_closes_point(&points) as f64).sqrt(),
+                closest_points(&mut points),
+                "{:?}",
+                points.clone()
+            );
+        }
     }
 }
