@@ -1,3 +1,4 @@
+pub mod dynamic;
 pub mod fibonacci;
 pub mod greedy;
 pub mod nums;
