@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::path::Iter;
 
 pub fn minimum_coins_exchange(value: usize, coins: &[usize]) -> usize {
     let mut slots: Vec<usize> = vec![0];
@@ -112,10 +111,30 @@ pub fn longest_common_subsequence(sequences: &[&[usize]]) -> usize {
     longest_common_consecutive_subsequence(&slices)
 }
 
+pub fn dynamic_longest_common_subsequence(s1: &[usize], s2: &[usize]) -> usize {
+    let n = s1.len() + 1;
+    let m = s2.len() + 1;
+    let mut d: Vec<Vec<usize>> = vec![vec![0usize; m]; n];
+    for j in 1..m {
+        for i in 1..n {
+            let equals = d[i - 1][j - 1] + 1;
+            let not_equals_1 = d[i - 1][j];
+            let not_equals_2 = d[i][j - 1];
+            if s1[i - 1] == s2[j - 1] {
+                d[i][j] = equals;
+            } else {
+                d[i][j] = not_equals_1.max(not_equals_2);
+            }
+        }
+    }
+    d[s1.len()][s2.len()]
+}
+
 #[cfg(test)]
 mod test {
     use crate::dynamic::{
-        edit_distance, longest_common_subsequence, minimum_coins_exchange, primitive_calculator,
+        dynamic_longest_common_subsequence, edit_distance, longest_common_subsequence,
+        minimum_coins_exchange, primitive_calculator,
     };
 
     #[test]
@@ -148,6 +167,6 @@ mod test {
     fn longest_common_subsequence_size_2_example() {
         let s1 = [2, 7, 8, 3];
         let s2 = [5, 2, 8, 7];
-        assert_eq!(longest_common_subsequence(&[&s1, &s2]), 2);
+        assert_eq!(dynamic_longest_common_subsequence(&s1, &s2), 2);
     }
 }
