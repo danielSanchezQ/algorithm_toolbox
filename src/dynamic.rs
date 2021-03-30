@@ -1,3 +1,6 @@
+use std::collections::HashSet;
+use std::path::Iter;
+
 pub fn minimum_coins_exchange(value: usize, coins: &[usize]) -> usize {
     let mut slots: Vec<usize> = vec![0];
     for i in 1..=value {
@@ -70,9 +73,50 @@ pub fn edit_distance(s1: &str, s2: &str) -> usize {
     d[s1.len()][s2.len()]
 }
 
+pub fn common_items(sequences: &[&[usize]]) -> HashSet<usize> {
+    let mut res: HashSet<usize> = HashSet::new();
+    for s in sequences {
+        res.extend(s.iter())
+    }
+    res
+}
+
+pub fn nub_sequence(seq: &[usize], items: &HashSet<usize>) -> Vec<usize> {
+    seq.iter().filter(|i| items.contains(i)).cloned().collect()
+}
+
+pub fn longest_common_consecutive_subsequence(sequences: &[&[usize]]) -> usize {
+    let min_len = sequences.iter().map(|seq| seq.len()).min().unwrap();
+    for i in (2..min_len).rev() {
+        let collides = sequences
+            .iter()
+            .map(|seq| HashSet::from(seq.windows(i).collect()))
+            .reduce(|s1, s2| s1.intersection(&s2).cloned().collect::<HashSet<&[usize]>>())
+            .unwrap();
+        if collides.len() != 0 {
+            return collides.len();
+        }
+    }
+    0
+}
+
+pub fn longest_common_subsequence(sequences: &[&[usize]]) -> usize {
+    let common = common_items(sequences);
+    println!("{:?}", common);
+    let consecutive: Vec<Vec<usize>> = sequences
+        .iter()
+        .map(|ss| nub_sequence(ss, &common))
+        .collect();
+    println!("{:?}", consecutive);
+    let slices: Vec<&[usize]> = consecutive.iter().map(|e| e.as_slice()).collect();
+    longest_common_consecutive_subsequence(&slices)
+}
+
 #[cfg(test)]
 mod test {
-    use crate::dynamic::{edit_distance, minimum_coins_exchange, primitive_calculator};
+    use crate::dynamic::{
+        edit_distance, longest_common_subsequence, minimum_coins_exchange, primitive_calculator,
+    };
 
     #[test]
     fn test_exchange_example() {
@@ -98,5 +142,12 @@ mod test {
     #[test]
     fn test_edit_distance_example3() {
         assert_eq!(edit_distance("editing", "distance"), 5);
+    }
+
+    #[test]
+    fn longest_common_subsequence_size_2_example() {
+        let s1 = [2, 7, 8, 3];
+        let s2 = [5, 2, 8, 7];
+        assert_eq!(longest_common_subsequence(&[&s1, &s2]), 2);
     }
 }
