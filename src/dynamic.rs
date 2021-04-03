@@ -111,7 +111,7 @@ pub fn longest_common_subsequence(sequences: &[&[usize]]) -> usize {
     longest_common_consecutive_subsequence(&slices)
 }
 
-pub fn dynamic_longest_common_subsequence(s1: &[usize], s2: &[usize]) -> usize {
+fn longest_common_subsequences_matrix(s1: &[usize], s2: &[usize]) -> Vec<Vec<usize>> {
     let n = s1.len() + 1;
     let m = s2.len() + 1;
     let mut d: Vec<Vec<usize>> = vec![vec![0usize; m]; n];
@@ -127,13 +127,44 @@ pub fn dynamic_longest_common_subsequence(s1: &[usize], s2: &[usize]) -> usize {
             }
         }
     }
+    d
+}
+
+pub fn dynamic_longest_common_subsequence(s1: &[usize], s2: &[usize]) -> usize {
+    let d = longest_common_subsequences_matrix(s1, s2);
     d[s1.len()][s2.len()]
+}
+
+pub fn dynamic_longest_common_subsequence_3(s1: &[usize], s2: &[usize], s3: &[usize]) -> usize {
+    let m = s1.len() + 1;
+    let n = s2.len() + 1;
+    let o = s3.len() + 1;
+    if [m, n, o].iter().any(|v| *v == 1) {
+        return 0;
+    }
+    let mut d: Vec<Vec<Vec<usize>>> = vec![vec![vec![0usize; o]; n]; m];
+    for i in 1..m {
+        for j in 1..n {
+            for k in 1..o {
+                let equals = d[i - 1][j - 1][k - 1] + 1;
+                let remove_i = d[i - 1][j][k];
+                let remove_j = d[i][j - 1][k];
+                let remove_k = d[i][j][k - 1];
+                if s1[i - 1] == s2[j - 1] && s2[j - 1] == s3[k - 1] {
+                    d[i][j][k] = equals;
+                } else {
+                    d[i][j][k] = *[remove_i, remove_j, remove_k].iter().max().unwrap();
+                }
+            }
+        }
+    }
+    d[s1.len()][s2.len()][s3.len()]
 }
 
 #[cfg(test)]
 mod test {
     use crate::dynamic::{
-        dynamic_longest_common_subsequence, edit_distance, longest_common_subsequence,
+        dynamic_longest_common_subsequence, dynamic_longest_common_subsequence_3, edit_distance,
         minimum_coins_exchange, primitive_calculator,
     };
 
@@ -168,5 +199,18 @@ mod test {
         let s1 = [2, 7, 8, 3];
         let s2 = [5, 2, 8, 7];
         assert_eq!(dynamic_longest_common_subsequence(&s1, &s2), 2);
+    }
+
+    #[test]
+    fn longest_common_subsequence_size_3_empty() {
+        assert_eq!(dynamic_longest_common_subsequence_3(&[], &[], &[]), 0);
+    }
+
+    #[test]
+    fn longest_common_subsequence_size_3_example() {
+        assert_eq!(
+            dynamic_longest_common_subsequence_3(&[1, 2, 3], &[2, 1, 3], &[1, 3, 5]),
+            2
+        );
     }
 }
