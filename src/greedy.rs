@@ -118,11 +118,13 @@ pub fn max_number_from_digits(digits: &mut [u64]) {
             (a, b) if a.len() > b.len() => (b, a),
             otherwise => otherwise,
         };
+        println!("{} {}", a, b);
         while b.starts_with(&a) && (b.len() > a.len()) {
             for _ in 0..a.len() {
                 b.remove(0);
             }
         }
+        println!("{} {}", a, b);
         let mut a_iter = a.chars();
         let mut b_iter = b.chars();
         loop {
@@ -130,9 +132,9 @@ pub fn max_number_from_digits(digits: &mut [u64]) {
             let b_next = b_iter.next();
             match (a_next, b_next) {
                 (None, None) => {
-                    return Ordering::Greater;
+                    return Ordering::Equal;
                 }
-                (Some(a), Some(b)) => match a.cmp(&b) {
+                (Some(aa), Some(bb)) => match aa.cmp(&bb) {
                     Ordering::Equal => {}
                     Ordering::Less => {
                         return Ordering::Less;
@@ -142,10 +144,10 @@ pub fn max_number_from_digits(digits: &mut [u64]) {
                     }
                 },
                 (Some(_), None) => {
-                    return Ordering::Less;
+                    return b.chars().nth(b.len() - 1).cmp(&a.chars().nth(a.len() - 1));
                 }
                 (None, Some(_)) => {
-                    return Ordering::Greater;
+                    return a.chars().nth(a.len() - 1).cmp(&b.chars().nth(b.len() - 1));
                 }
             }
         }
@@ -227,12 +229,29 @@ mod test {
         max_number_from_digits(&mut v);
         assert_eq!(v, [92, 4, 39, 23]);
 
-        let mut v = [111, 1, 1, 10, 10];
-        max_number_from_digits(&mut v);
-        assert_eq!(v, [1, 1, 111, 10, 10]);
-
         let mut v = [95959995, 95];
         max_number_from_digits(&mut v);
         assert_eq!(v, [95959995, 95]);
+    }
+
+    #[test]
+    fn max_number_from_digits_ones_example() {
+        let mut v = [111, 1, 1, 10, 10];
+        max_number_from_digits(&mut v);
+        assert_eq!(v, [1, 1, 111, 10, 10]);
+    }
+
+    #[test]
+    fn max_number_from_digits_23_example() {
+        let mut v = [23, 2, 23, 2];
+        max_number_from_digits(&mut v);
+        assert_eq!(v, [23, 23, 2, 2]);
+    }
+
+    #[test]
+    fn max_number_from_digits_examples_2() {
+        let mut v = [79, 797];
+        max_number_from_digits(&mut v);
+        assert_eq!(v, [79, 797]);
     }
 }

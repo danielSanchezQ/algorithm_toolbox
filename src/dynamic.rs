@@ -161,11 +161,27 @@ pub fn dynamic_longest_common_subsequence_3(s1: &[usize], s2: &[usize], s3: &[us
     d[s1.len()][s2.len()][s3.len()]
 }
 
+pub fn maximum_sum_in_capacity(weight: usize, values: &[usize]) -> usize {
+    let mut m = vec![vec![0; values.len() + 1]; weight + 1];
+    for item in 1..values.len() + 1 {
+        for w in 1..weight + 1 {
+            m[w][item] = m[w][item - 1];
+            let v = values[item - 1];
+            if v <= weight {
+                let new_val = m[weight - w][item - 1] + v;
+                m[w][item] = new_val.max(m[w][item - 1]);
+            }
+        }
+    }
+    println!("{:?}", m);
+    m[weight][values.len()]
+}
+
 #[cfg(test)]
 mod test {
     use crate::dynamic::{
         dynamic_longest_common_subsequence, dynamic_longest_common_subsequence_3, edit_distance,
-        minimum_coins_exchange, primitive_calculator,
+        maximum_sum_in_capacity, minimum_coins_exchange, primitive_calculator,
     };
 
     #[test]
@@ -212,5 +228,10 @@ mod test {
             dynamic_longest_common_subsequence_3(&[1, 2, 3], &[2, 1, 3], &[1, 3, 5]),
             2
         );
+    }
+
+    #[test]
+    fn maximum_sum_capacity_example() {
+        assert_eq!(maximum_sum_in_capacity(10, &[1, 4, 8]), 9);
     }
 }
