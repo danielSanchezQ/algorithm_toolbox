@@ -163,18 +163,41 @@ pub fn dynamic_longest_common_subsequence_3(s1: &[usize], s2: &[usize], s3: &[us
 
 pub fn maximum_sum_in_capacity(weight: usize, values: &[usize]) -> usize {
     let mut m = vec![vec![0; values.len() + 1]; weight + 1];
-    for item in 1..values.len() + 1 {
-        for w in 1..weight + 1 {
+    for item in 1..=values.len() {
+        for w in 1..=weight {
             m[w][item] = m[w][item - 1];
             let v = values[item - 1];
-            if v <= weight {
-                let new_val = m[weight - w][item - 1] + v;
+            if v <= w {
+                let new_val = m[w - v][item - 1] + v;
                 m[w][item] = new_val.max(m[w][item - 1]);
             }
         }
     }
-    println!("{:?}", m);
     m[weight][values.len()]
+}
+
+pub fn min_max(
+    m: &[&[isize]],
+    #[allow(non_snake_case)] M: &[&[isize]],
+    operators: &mut [impl FnMut(isize, isize) -> isize],
+    i: usize,
+    j: usize,
+) -> (isize, isize) {
+    let mut max = isize::MIN;
+    let mut min = isize::MAX;
+    for k in i..j - 1 {
+        let op = &mut operators[k];
+        let a = op(M[i][k], M[k + 1][j]);
+        let b = op(M[i][k], m[k + 1][j]);
+        let c = op(m[i][k], M[k + 1][j]);
+        let d = op(m[i][k], m[k + 1][j]);
+        max = *[max, a.clone(), b.clone(), c.clone(), d.clone()]
+            .iter()
+            .max()
+            .unwrap();
+        min = *[min, a, b, c, d].iter().min().unwrap();
+    }
+    (min, max)
 }
 
 #[cfg(test)]

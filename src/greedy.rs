@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 use std::ops::Div;
 
 pub fn coin_exchange(n: u64) -> u64 {
@@ -114,43 +113,7 @@ pub fn max_number_from_digits(digits: &mut [u64]) {
     digits.sort_by(|init_a, init_b| {
         let a = init_a.to_string();
         let b = init_b.to_string();
-        let (a, mut b) = match (a, b) {
-            (a, b) if a.len() > b.len() => (b, a),
-            otherwise => otherwise,
-        };
-        println!("{} {}", a, b);
-        while b.starts_with(&a) && (b.len() > a.len()) {
-            for _ in 0..a.len() {
-                b.remove(0);
-            }
-        }
-        println!("{} {}", a, b);
-        let mut a_iter = a.chars();
-        let mut b_iter = b.chars();
-        loop {
-            let a_next = a_iter.next();
-            let b_next = b_iter.next();
-            match (a_next, b_next) {
-                (None, None) => {
-                    return Ordering::Equal;
-                }
-                (Some(aa), Some(bb)) => match aa.cmp(&bb) {
-                    Ordering::Equal => {}
-                    Ordering::Less => {
-                        return Ordering::Less;
-                    }
-                    Ordering::Greater => {
-                        return Ordering::Greater;
-                    }
-                },
-                (Some(_), None) => {
-                    return b.chars().nth(b.len() - 1).cmp(&a.chars().nth(a.len() - 1));
-                }
-                (None, Some(_)) => {
-                    return a.chars().nth(a.len() - 1).cmp(&b.chars().nth(b.len() - 1));
-                }
-            }
-        }
+        format!("{}{}", a, b).cmp(&format!("{}{}", b, a))
     });
     digits.reverse();
 }
