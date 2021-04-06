@@ -177,8 +177,8 @@ pub fn maximum_sum_in_capacity(weight: usize, values: &[usize]) -> usize {
 }
 
 pub fn min_max(
-    m: &[&[isize]],
-    #[allow(non_snake_case)] M: &[&[isize]],
+    m: &[Vec<isize>],
+    #[allow(non_snake_case)] M: &[Vec<isize>],
     operators: &mut [impl FnMut(isize, isize) -> isize],
     i: usize,
     j: usize,
@@ -198,6 +198,29 @@ pub fn min_max(
         min = *[min, a, b, c, d].iter().min().unwrap();
     }
     (min, max)
+}
+
+pub fn maximize_expresion_with_parenthesis(
+    elements: &[isize],
+    mut operators: &mut [impl FnMut(isize, isize) -> isize],
+) -> isize {
+    let n = elements.len() + 1;
+    let mut m = vec![vec![0isize; n]; n];
+    #[allow(non_snake_case)]
+    let mut M = vec![vec![0isize; n]; n];
+    for i in 1..n {
+        m[i][i] = elements[i - 1];
+        M[i][i] = elements[i - 1];
+    }
+    for s in 1..n - 1 {
+        for i in 1..n - s {
+            let j = i + s;
+            let (min, max) = min_max(&m, &M, &mut operators, i, j);
+            m[i][j] = min;
+            M[i][j] = max;
+        }
+    }
+    M[1][n]
 }
 
 #[cfg(test)]
