@@ -224,12 +224,37 @@ pub fn maximize_expresion_with_parenthesis(
     M[0][n - 1]
 }
 
+pub fn knapsack_subset_sums(values: &[usize]) -> bool {
+    let sum: usize = values.iter().sum();
+    if sum % 3 != 0 {
+        return false;
+    }
+    let weight = sum / 3;
+    let mut m = vec![vec![0; values.len() + 1]; weight + 1];
+    for item in 1..=values.len() {
+        for w in 1..=weight {
+            m[w][item] = m[w][item - 1];
+            let v = values[item - 1];
+            if v <= w {
+                let new_val = m[w - v][item - 1] + v;
+                m[w][item] = new_val.max(m[w][item - 1]);
+            }
+        }
+    }
+    for i in 0..3 {
+        if m[weight][values.len() - i] != weight {
+            return false;
+        }
+    }
+    true
+}
+
 #[cfg(test)]
 mod test {
     use crate::dynamic::{
         dynamic_longest_common_subsequence, dynamic_longest_common_subsequence_3, edit_distance,
-        maximize_expresion_with_parenthesis, maximum_sum_in_capacity, minimum_coins_exchange,
-        primitive_calculator,
+        knapsack_subset_sums, maximize_expresion_with_parenthesis, maximum_sum_in_capacity,
+        minimum_coins_exchange, primitive_calculator,
     };
 
     #[test]
@@ -295,5 +320,18 @@ mod test {
         ];
         let result = maximize_expresion_with_parenthesis(&values, &mut ops);
         assert_eq!(result, 200);
+    }
+
+    #[test]
+    fn knapsack_subset_sum_test_example() {
+        assert_eq!(knapsack_subset_sums(&[3, 3, 3, 3]), false);
+    }
+
+    #[test]
+    fn knapsack_subset_sum_test_example_2() {
+        assert_eq!(
+            knapsack_subset_sums(&[17, 59, 34, 57, 17, 23, 67, 1, 18, 2, 59]),
+            true
+        );
     }
 }
