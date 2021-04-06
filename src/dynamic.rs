@@ -185,7 +185,7 @@ pub fn min_max(
 ) -> (isize, isize) {
     let mut max = isize::MIN;
     let mut min = isize::MAX;
-    for k in i..j - 1 {
+    for k in i..j {
         let op = &mut operators[k];
         let a = op(M[i][k], M[k + 1][j]);
         let b = op(M[i][k], m[k + 1][j]);
@@ -204,30 +204,32 @@ pub fn maximize_expresion_with_parenthesis(
     elements: &[isize],
     mut operators: &mut [impl FnMut(isize, isize) -> isize],
 ) -> isize {
-    let n = elements.len() + 1;
+    let n = elements.len();
     let mut m = vec![vec![0isize; n]; n];
     #[allow(non_snake_case)]
     let mut M = vec![vec![0isize; n]; n];
-    for i in 1..n {
-        m[i][i] = elements[i - 1];
-        M[i][i] = elements[i - 1];
+    for i in 0..n {
+        m[i][i] = elements[i];
+        M[i][i] = elements[i];
     }
-    for s in 1..n - 1 {
-        for i in 1..n - s {
-            let j = i + s;
+
+    for s in 0..n - 1 {
+        for i in 0..n - s - 1 {
+            let j = i + s + 1;
             let (min, max) = min_max(&m, &M, &mut operators, i, j);
             m[i][j] = min;
             M[i][j] = max;
         }
     }
-    M[1][n]
+    M[0][n - 1]
 }
 
 #[cfg(test)]
 mod test {
     use crate::dynamic::{
         dynamic_longest_common_subsequence, dynamic_longest_common_subsequence_3, edit_distance,
-        maximum_sum_in_capacity, minimum_coins_exchange, primitive_calculator,
+        maximize_expresion_with_parenthesis, maximum_sum_in_capacity, minimum_coins_exchange,
+        primitive_calculator,
     };
 
     #[test]
@@ -279,5 +281,19 @@ mod test {
     #[test]
     fn maximum_sum_capacity_example() {
         assert_eq!(maximum_sum_in_capacity(10, &[1, 4, 8]), 9);
+    }
+
+    #[test]
+    fn maximum_parenthesis_expresion_example() {
+        let values = [5, 8, 7, 4, 8, 9];
+        let mut ops = [
+            |a, b| a - b,
+            |a, b| a + b,
+            |a, b| a * b,
+            |a, b| a - b,
+            |a, b| a + b,
+        ];
+        let result = maximize_expresion_with_parenthesis(&values, &mut ops);
+        assert_eq!(result, 200);
     }
 }
